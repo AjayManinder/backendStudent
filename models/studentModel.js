@@ -22,8 +22,13 @@ const studentSchema = mongoose.Schema({
   yearSemIds: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'YearSem',
-  }]
-  
+  }],
+  user_id: {
+    type: Number, // Assuming user_id is a string in your User model
+    ref: 'User',
+    required: true,
+    unique: true, // Ensure uniqueness for user_id in Student table
+  },
 }, {
   timestamps: true,
 });

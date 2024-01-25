@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
+  user_id: {
+    type: Number,
+    unique: true,
+    required: true,
+  },
   email: {
     type: String,
     unique: true,
@@ -21,6 +26,19 @@ const userSchema = new Schema({
     required: true,
     trim: true,
   },
+  // roleIds: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: 'Role',
+  //   },
+  // ]
+   role_id: {
+    type: Number, // Assuming user_id is a string in your User model
+    ref: 'Role',
+    required: true,
+    unique: true, // Ensure uniqueness for user_id in Student table
+  },
+
 });
 
 const User = mongoose.model('User', userSchema);
