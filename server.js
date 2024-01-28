@@ -14,6 +14,7 @@ const subjectRoutes = require('./subjectRoute');
 const YearSem = require('./YearSem');
 const teacherRoutes = require('./teacherRoute');
 const studentRoutes = require('./studentRoute');
+const roleRoutes = require('./roleRoute');
 
 const app = express();
 app.use(cors());
@@ -49,6 +50,7 @@ mongoose.connect(`${protocol}//${username}:${password}@${cluster}/${dbName}`, {
 app.use(YearSem);
 app.use(teacherRoutes);
 app.use(studentRoutes);
+app.use(roleRoutes);
 
 const secretKey = process.env.JWT_SECRET_KEY
 
@@ -118,6 +120,46 @@ app.post('/register', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// GET all users with population
+app.get('/users', async (req, res) => {
+  try {
+    // Find all users and populate the 'role_id' field
+    const users = await User.find({})
+      .populate('role_id', '-_id role_id roleName'); // Exclude _id and include role_id, roleName
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+User.updateMany({}, { $set: { role_id: null } }, { multi: true }, (err, result) => {
+  if (err) {
+    console.error('Error updating documents:', err.message);
+  } else {
+    console.log('Documents updated successfully:', result);
+  }
+});
+// GET a user by user_id with population
+app.get('/users/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    
+    // Find the user by user_id and populate the 'role_id' field
+    const user = await User.findOne({ user_id })
+      .populate('role_id'); // Assuming 'role_id' is a reference to another model
+
+    if (!user) {
+      return res.status(404).json({ message: `Cannot find any user with user_id ${user_id}` });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 
 // Update a user by user_id
 app.put('/users/:user_id', async (req, res) => {

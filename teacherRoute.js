@@ -6,18 +6,18 @@ const router = express.Router();
 // Create a new teacher
 router.post('/teachers', async (req, res) => {
   try {
-    const { teacherID, teacherName, subjectIds, role_id } = req.body;
+    const { teacherID, teacherName, subjectIds, user_id } = req.body;
 
     // Ensure required properties are provided
-    if (!teacherID || !teacherName || !subjectIds || !role_id) {
-      return res.status(400).json({ message: 'Please provide teacherID, teacherName, subjectIds, and role_id' });
+    if (!teacherID || !teacherName || !subjectIds || !user_id) {
+      return res.status(400).json({ message: 'Please provide teacherID, teacherName, subjectIds, and user_id' });
     }
 
     const newTeacher = await Teacher.create({
       teacherID,
       teacherName,
       subjectIds,
-      role_id,
+      user_id,
     });
 
     res.status(201).json(newTeacher);
@@ -29,7 +29,14 @@ router.post('/teachers', async (req, res) => {
 // Get all teachers
 router.get('/teachers', async (req, res) => {
   try {
-    const teachers = await Teacher.find({});
+    const teachers = await Teacher.find({}).populate('subjectIds')
+    .populate({
+      path: 'user_id',
+      populate: {
+        path: 'role_id',
+        model: 'Role',
+      },
+    });
     res.status(200).json(teachers);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -40,7 +47,14 @@ router.get('/teachers', async (req, res) => {
 router.get('/teachers/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const teacher = await Teacher.findById(id);
+    const teacher = await Teacher.findById(id).populate('subjectIds')
+    .populate({
+      path: 'user_id',
+      populate: {
+        path: 'role_id',
+        model: 'Role',
+      },
+    });;
     
     if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });
@@ -56,7 +70,14 @@ router.get('/teachers/:id', async (req, res) => {
 router.put('/teachers/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedTeacher = await Teacher.findByIdAndUpdate(id, req.body, { new: true });
+    const updatedTeacher = await Teacher.findByIdAndUpdate(id, req.body, { new: true }).populate('subjectIds')
+    .populate({
+      path: 'user_id',
+      populate: {
+        path: 'role_id',
+        model: 'Role',
+      },
+    });;
     
     if (!updatedTeacher) {
       return res.status(404).json({ message: 'Teacher not found' });

@@ -1,5 +1,5 @@
 const express = require('express');
-const Role = require('./models/Role'); // Adjust the path based on your project structure
+const Role = require('./models/rolesModal'); // Adjust the path based on your project structure
 
 const router = express.Router();
 

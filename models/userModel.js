@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const userSchema = new Schema({
   user_id: {
     type: Number,
-    unique: true,
+   unique: true,
     required: true,
   },
   email: {
@@ -33,12 +33,10 @@ const userSchema = new Schema({
   //   },
   // ]
    role_id: {
-    type: Number, // Assuming user_id is a string in your User model
-    ref: 'Role',
-    required: true,
-    unique: true, // Ensure uniqueness for user_id in Student table
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role', // Reference to the 'Role' model
+    unique: false,
   },
-
 });
 
 const User = mongoose.model('User', userSchema);

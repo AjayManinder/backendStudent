@@ -15,17 +15,9 @@ const teacherSchema = mongoose.Schema({
       ref: 'Subject',
     },
   ],
-  // roleIds: [
-  //   {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: 'User',
-  //   },],
-
-  role_id: {
-    type: Number, // Assuming user_id is a string in your User model
-    ref: 'Role',
-    required: true,
-    unique: true, // Ensure uniqueness for user_id in Student table
+   user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
 });
 

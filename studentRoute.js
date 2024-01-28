@@ -1,7 +1,7 @@
 const express = require('express');
 const Student = require('./models/studentModel'); // Adjust the path based on your project structure
 const router = express.Router();
-
+const mongoose = require('mongoose');
 
 // Create a new student
 router.post('/students', async (req, res) => {
@@ -21,13 +21,20 @@ router.post('/students', async (req, res) => {
   }
 });
 
+
 // Get all students with population
 router.get('/students', async (req, res) => {
   try {
     const students = await Student.find({})
       .populate('subjectIds')
       .populate('yearSemIds')
-      .populate('user_id');
+      .populate({
+        path: 'user_id',
+        populate: {
+          path: 'role_id',
+          model: 'Role',
+        },
+      })
     res.status(200).json(students);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -41,7 +48,13 @@ router.get('/students/:rollNo', async (req, res) => {
     const student = await Student.findOne({ rollNo })
       .populate('subjectIds')
       .populate('yearSemIds')
-      .populate('user_id');
+      .populate({
+        path: 'user_id',
+        populate: {
+          path: 'role_id',
+          model: 'Role',
+        },
+      })
 
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
@@ -60,7 +73,13 @@ router.put('/students/:rollNo', async (req, res) => {
     const updatedStudent = await Student.findOneAndUpdate({ rollNo }, req.body, { new: true })
       .populate('subjectIds')
       .populate('yearSemIds')
-      .populate('user_id');
+      .populate({
+        path: 'user_id',
+        populate: {
+          path: 'role_id',
+          model: 'Role',
+        },
+      })
 
     if (!updatedStudent) {
       return res.status(404).json({ message: 'Student not found' });
@@ -75,7 +94,6 @@ router.put('/students/:rollNo', async (req, res) => {
 
 // Delete a student by Roll No
 router.delete('/students/:rollNo', async (req, res) => {
-  // Delete a user by user_id
   try {
     const { rollNo } = req.params;
     const deletedStudent = await Student.findOneAndDelete({ rollNo });
