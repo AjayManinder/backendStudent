@@ -4,20 +4,21 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bodyParser = require('body-parser'); // Move bodyParser here
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const bodyParser = require('body-parser');
 const User = require('./models/userModel');
 const Student = require('./models/studentModel');
+const Teacher = require('./models/teacherModel');
 const subjectRoutes = require('./subjectRoute');
 const YearSem = require('./YearSem');
 const teacherRoutes = require('./teacherRoute');
-
-
+const studentRoutes = require('./studentRoute');
+const roleRoutes = require('./roleRoute');
 
 const app = express();
-app.use(bodyParser.json());
 app.use(cors());
+app.use(bodyParser.json());
 require('dotenv').config();
 
 const port = 5000;
@@ -45,19 +46,12 @@ mongoose.connect(`${protocol}//${username}:${password}@${cluster}/${dbName}`, {
 
 
 
-  app.use(subjectRoutes);
-  app.use(YearSem);
-  app.use(teacherRoutes);
-// Define CRUD endpoints for students (similar to the Employee model)
+ app.use(subjectRoutes);
+app.use(YearSem);
+app.use(teacherRoutes);
+app.use(studentRoutes);
+app.use(roleRoutes);
 
-// app.get('/students', async (req, res) => {
-//   try {
-//     const students = await Student.find({}); //.populate('subjectIds')
-//     res.status(200).json(students);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
 const secretKey = process.env.JWT_SECRET_KEY
 
 const authenticateUser = (req, res, next) => {
@@ -96,9 +90,14 @@ app.post('/login', async (req, res) => {
 
 // User registration endpoint
 app.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { user_id, email, password, role_id } = req.body;
 
   try {
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
     // Check if the email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -110,8 +109,10 @@ app.post('/register', async (req, res) => {
 
     // Create a new user
     const newUser = await User.create({
+      user_id,
       email,
       password: hashedPassword,
+      role_id,
     });
 
     res.status(201).json({ message: 'User registered successfully' });
@@ -120,94 +121,90 @@ app.post('/register', async (req, res) => {
   }
 });
 
-
-app.get('/students-subjects', async (req, res) => {
+// GET all users with population
+app.get('/users', async (req, res) => {
   try {
-    const students = await Student.find({}).populate('subjectIds'); 
-    res.status(200).json(students);
+    // Find all users and populate the 'role_id' field
+    const users = await User.find({})
+      .populate('role_id', '-_id role_id roleName'); // Exclude _id and include role_id, roleName
+
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-app.get('/students', async (req, res) => {
-  try {
-    const students = await Student.find({})
-    .populate('subjectIds')
-    .populate('yearSemIds'); 
-    res.status(200).json(students);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+User.updateMany({}, { $set: { role_id: null } }, { multi: true }, (err, result) => {
+  if (err) {
+    console.error('Error updating documents:', err.message);
+  } else {
+    console.log('Documents updated successfully:', result);
   }
 });
-
-// Update a student by Roll No
-app.put('/students/:rollNo', async (req, res) => {
+// GET a user by user_id with population
+app.get('/users/:user_id', async (req, res) => {
   try {
-    const { rollNo } = req.params;
-    const updatedStudent = await Student.findOneAndUpdate({ rollNo }, req.body, { new: true });
-    if (!updatedStudent) {
-      return res.status(404).json({ message: `Cannot find any student with rollNo ${rollNo}` });
-    }
-    res.status(200).json(updatedStudent);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+    const { user_id } = req.params;
+    
+    // Find the user by user_id and populate the 'role_id' field
+    const user = await User.findOne({ user_id })
+      .populate('role_id'); // Assuming 'role_id' is a reference to another model
 
-// Delete a student by Roll No
-app.delete('/students/:rollNo', async (req, res) => {
-  try {
-    const { rollNo } = req.params;
-    const deletedStudent = await Student.findOneAndDelete({ rollNo });
-    if (!deletedStudent) {
-      return res.status(404).json({ message: `Cannot find any student with rollNo ${rollNo}` });
-    }
-    res.status(200).json(deletedStudent);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-
-// Search students by rollNo, name, or percentage
-app.get('/students/search', async (req, res) => {
-  try {
-    const { searchField, searchTerm } = req.query;
-    let query = {};
-
-    if (searchField === 'rollNo') {
-      query = { rollNo: searchTerm };
-    } else if (searchField === 'name') {
-      query = { name: { $regex: searchTerm, $options: 'i' } }; // Case-insensitive search by name
-    } else if (searchField === 'percentage') {
-      query = { percentage: searchTerm };
-    } else {
-      return res.status(400).json({ message: 'Invalid search field' });
+    if (!user) {
+      return res.status(404).json({ message: `Cannot find any user with user_id ${user_id}` });
     }
 
-    const students = await Student.find(query);
-    res.status(200).json(students);
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
+
+// Update a user by user_id
+app.put('/users/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const updatedUser = await User.findOneAndUpdate({ user_id }, req.body, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: `Cannot find any user with user_id ${user_id}` });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete a user by user_id
+app.delete('/users/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const deletedUser = await User.findOneAndDelete({ user_id });
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: `Cannot find any user with user_id ${user_id}` });
+    }
+
+    res.status(200).json(deletedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+// app.get('/students-subjects', async (req, res) => {
+//   try {
+//     const students = await Student.find({}).populate('subjectIds'); 
+//     res.status(200).json(students);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+
 
 module.exports = app;
-// Example POST endpoint to add a student
-app.post('/students', async (req, res) => {
-  try {
-    const { subjectIds, yearSemIds, ...studentData } = req.body;
 
-    const newStudent = await Student.create({
-      ...studentData,
-      subjectIds: subjectIds.map(subjectId => new mongoose.Types.ObjectId(subjectId)),
-      yearSemIds: yearSemIds.map(yearSemId => new mongoose.Types.ObjectId(yearSemId)),
-    });
-
-    res.status(201).json(newStudent);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
 

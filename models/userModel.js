@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
+  user_id: {
+    type: Number,
+   unique: true,
+    required: true,
+  },
   email: {
     type: String,
     unique: true,
@@ -20,6 +25,17 @@ const userSchema = new Schema({
     type: String,
     required: true,
     trim: true,
+  },
+  // roleIds: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: 'Role',
+  //   },
+  // ]
+   role_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role', // Reference to the 'Role' model
+    unique: false,
   },
 });
 
