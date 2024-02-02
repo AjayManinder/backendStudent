@@ -10,16 +10,21 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/userModel');
 const Student = require('./models/studentModel');
 const Teacher = require('./models/teacherModel');
-const subjectRoutes = require('./subjectRoute');
-const YearSem = require('./YearSem');
-const teacherRoutes = require('./teacherRoute');
-const studentRoutes = require('./studentRoute');
-const roleRoutes = require('./roleRoute');
+const subjectRoutes = require('./routes/subjectRoute');
+// route imports
+const YearSem = require('./routes/YearSem');
+const teacherRoutes = require('./routes/teacherRoute');
+const studentRoutes = require('./routes/studentRoute');
+const adminRoutes = require('./routes/adminRoute');
+const roleRoutes = require('./routes/roleRoute');
+const swagger = require('./swagger');
+const { performance } = require('perf_hooks');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 require('dotenv').config();
+app.use('/api-docs', swagger.swaggerUi.serve, swagger.swaggerUi.setup(swagger.specs));
 
 const port = 5000;
 const protocol = process.env.DB_PROTOCOL;
@@ -29,21 +34,6 @@ const cluster = process.env.DB_CLUSTER;
 const dbName = process.env.DB_NAME;
 
 
-mongoose.connect(`${protocol}//${username}:${password}@${cluster}/${dbName}`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('Connected to MongoDB');
-    // Start the server after connecting to MongoDB
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
-    });
-  })
-  .catch((error) => {
-    console.error('Error connecting to MongoDB:', error.message);
-  });
-
 
 
  app.use(subjectRoutes);
@@ -51,6 +41,7 @@ app.use(YearSem);
 app.use(teacherRoutes);
 app.use(studentRoutes);
 app.use(roleRoutes);
+app.use(adminRoutes);
 
 const secretKey = process.env.JWT_SECRET_KEY
 
@@ -71,22 +62,73 @@ const authenticateUser = (req, res, next) => {
   });
 };
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: API endpoints for managing Users
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         user_id:
+ *           type: number
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ *         role_id:
+ *           type: string
+ *       required:
+ *         - user_id
+ *         - email
+ *         - password
+ */
+
+
 // Login endpoint
-app.post('/login', async (req, res) => {
+app.post('/login', async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Find user in the database
-  const user = await User.findOne({ email });
+  try {
+    // Start measuring time
+    const startTime = performance.now();
+    
+    // Find user in the database
+    const user = await User.findOne({ email });
 
-  // Validate password
-  if (user && bcrypt.compareSync(password, user.password)) {
-    // Generate token using the random secret key
-    const token = jwt.sign({ email }, secretKey);
-    return res.json({ token });
+    // Validate password
+    if (user && bcrypt.compareSync(password, user.password)) {
+      // Generate token including user_id in the payload
+      const token = jwt.sign({ user_id: user.user_id, email }, secretKey);
+
+      // Stop measuring time
+      const stopTime = performance.now();
+      
+      // Calculate the time taken
+      const timeTaken = stopTime - startTime;
+      
+      // Log time taken
+      console.log(`Time taken /login: ${timeTaken} milliseconds`);
+
+      return res.json({ token });
+    }
+
+    // Incorrect password or user not found
+    res.status(401).json({ message: 'Invalid email or password' });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
   }
 
-  res.status(401).json({ message: 'Invalid credentials' });
+  // Call next to pass control to the next middleware
+  next();
 });
+
 
 // User registration endpoint
 app.post('/register', async (req, res) => {
@@ -120,6 +162,23 @@ app.post('/register', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all Users
+ *     tags: [Users]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ */
 
 // GET all users with population
 app.get('/users', async (req, res) => {
@@ -208,3 +267,18 @@ app.delete('/users/:user_id', async (req, res) => {
 module.exports = app;
 
 
+
+mongoose.connect(`${protocol}//${username}:${password}@${cluster}/${dbName}`, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => {
+    console.log('Connected to MongoDB');
+    // Start the server after connecting to MongoDB
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Error connecting to MongoDB:', error.message);
+  });

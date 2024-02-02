@@ -36,7 +36,7 @@ const userSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role', // Reference to the 'Role' model
     unique: false,
-  },
+  }
 });
 
 const User = mongoose.model('User', userSchema);
