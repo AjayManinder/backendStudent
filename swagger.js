@@ -9,7 +9,7 @@ const options = {
       version: '1.0.0',
     },
   },
-  apis: ['./roleRoute.js', './studentRoute.js','./subjectRoute.js','./teacherRoute.js','./YearSem.js','./server.js'], // Point to your route files
+  apis: ['./routes/roleRoute.js', './routes/studentRoute.js','./routes/subjectRoute.js','./routes/teacherRoute.js','./routes/YearSem.js','./server.js'], // Point to your route files
 };
 
 const specs = swaggerJsdoc(options);
