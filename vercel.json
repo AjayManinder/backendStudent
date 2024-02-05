@@ -1,8 +1,5 @@
 {
   "functions": {
-    "server": {
-      "runtime": "nodejs14.x",
-      "memory": 512
-    }
+    "directory": "."
   }
 }
