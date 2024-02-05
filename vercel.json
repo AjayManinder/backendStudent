@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/server": {
+    "server": {
       "runtime": "nodejs18.x",
       "memory": 512
     }
