@@ -268,10 +268,7 @@ module.exports = app;
 
 
 
-mongoose.connect(`${protocol}//${username}:${password}@${cluster}/${dbName}`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(`${protocol}//${username}:${password}@${cluster}/${dbName}`)
   .then(() => {
     console.log('Connected to MongoDB');
     // Start the server after connecting to MongoDB
