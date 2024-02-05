@@ -1,7 +1,45 @@
 const express = require('express');
-const Role = require('./models/rolesModal'); // Adjust the path based on your project structure
+const Role = require('../models/rolesModal'); // Adjust the path based on your project structure
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /roles:
+ *   post:
+ *     summary: Create a new role
+ *     tags:
+ *       - Roles
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Role'
+ *     responses:
+ *       '201':
+ *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Role'
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Role:
+ *       type: object
+ *       properties:
+ *         role_id:
+ *           type: number
+ *         roleName:
+ *           type: string
+ *       required:
+ *         - role_id
+ *         - roleName
+ */
 
 // Create a new role
 router.post('/roles', async (req, res) => {
@@ -23,6 +61,24 @@ router.post('/roles', async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /roles:
+ *   get:
+ *     summary: Get all roles
+ *     tags:
+ *       - Roles
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Role'
+ */
 
 // Get all roles
 router.get('/roles', async (req, res) => {

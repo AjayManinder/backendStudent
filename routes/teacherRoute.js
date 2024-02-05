@@ -1,7 +1,58 @@
 const express = require('express');
-const Teacher = require('./models/teacherModel');
+const Teacher = require('../models/teacherModel');
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Teachers
+ *   description: API endpoints for managing teachers
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Teacher:
+ *       type: object
+ *       properties:
+ *         teacherID:
+ *           type: string
+ *         teacherName:
+ *           type: string
+ *         subjectIds:
+ *           type: array
+ *           items:
+ *             type: string
+ *         user_id:
+ *           type: string
+ *       required:
+ *         - teacherID
+ *         - teacherName
+ */
+
+
+/**
+ * @swagger
+ * /teachers:
+ *   post:
+ *     summary: Create a new teacher
+ *     tags: [Teachers]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Teacher'
+ *     responses:
+ *       '201':
+ *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Teacher'
+ */
 
 // Create a new teacher
 router.post('/teachers', async (req, res) => {
@@ -25,6 +76,24 @@ router.post('/teachers', async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /teachers:
+ *   get:
+ *     summary: Get all Teachers
+ *     tags: [Teachers]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Teacher'
+ */
+
 
 // Get all teachers
 router.get('/teachers', async (req, res) => {
@@ -54,7 +123,7 @@ router.get('/teachers/:id', async (req, res) => {
         path: 'role_id',
         model: 'Role',
       },
-    });;
+    });
     
     if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });
@@ -77,7 +146,7 @@ router.put('/teachers/:id', async (req, res) => {
         path: 'role_id',
         model: 'Role',
       },
-    });;
+    });
     
     if (!updatedTeacher) {
       return res.status(404).json({ message: 'Teacher not found' });
