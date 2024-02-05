@@ -1,8 +1,8 @@
 {
   "functions": {
-    "api": {
-      "handler": "server.js",
-      "runtime": "nodejs14.x"
+    "api/server": {
+      "runtime": "nodejs18.x",
+      "memory": 512
     }
   }
 }
