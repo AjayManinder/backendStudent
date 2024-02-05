@@ -1,8 +1,8 @@
 {
-  "version": 2,
   "functions": {
-    "api/*.js": {
-      "runtime": "node@14" // Ensure the version is specified correctly
+    "api": {
+      "handler": "server.js",
+      "runtime": "nodejs14.x"
     }
   }
 }
