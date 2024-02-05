@@ -1,7 +1,56 @@
 const express = require('express');
-const YearSem = require('./models/yearSem'); // Update the path accordingly
+const YearSem = require('../models/yearSem'); // Update the path accordingly
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Year-Sem
+ *   description: API endpoints for managing Year-Sem
+ */
+
+
+/**
+ * @swagger
+ * /yearsem:
+ *   post:
+ *     summary: Create a new year-sem
+ *     tags: [Year-Sem]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/YearSem'
+ *     responses:
+ *       '201':
+ *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/YearSem'
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     YearSem:
+ *       type: object
+ *       properties:
+ *         year:
+ *           type: number
+ *         sem:
+ *           type: string
+ *         status:
+ *           type: string
+ *           enum: ['active', 'inactive']
+ *           default: 'active'
+ *       required:
+ *         - year
+ *         - sem
+ */
 
 // Create a new YearSem record
 router.post('/yearsem', async (req, res) => {
@@ -12,6 +61,23 @@ router.post('/yearsem', async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+/**
+* @swagger
+* /yearsem:
+*   get:
+*     summary: Get all year-sem records
+*     tags: [Year-Sem]
+*     responses:
+*       '200':
+*         description: OK
+*         content:
+*           application/json:
+*             schema:
+*               type: array
+*               items:
+*                 $ref: '#/components/schemas/YearSem'
+*/
 
 // Get all YearSem records
 router.get('/yearsem', async (req, res) => {

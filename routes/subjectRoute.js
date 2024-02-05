@@ -1,7 +1,58 @@
 const express = require('express');
-const Subject = require('./models/subjectModel');
+const Subject = require('../models/subjectModel');
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Subjects
+ *   description: API endpoints for managing Subjects
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Subject:
+ *       type: object
+ *       properties:
+ *         subID:
+ *           type: string
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *         topics:
+ *           type: array
+ *           items:
+ *             type: string
+ *       required:
+ *         - subID
+ *         - name
+ */
+
+/**
+ * @swagger
+ * /subjects:
+ *   post:
+ *     summary: Create a new Subject
+ *     tags: [Subjects]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Subject'
+ *     responses:
+ *       '201':
+ *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Subject'
+ */
+
 
 // Create a new subject
 router.post('/subjects', async (req, res) => {
@@ -12,6 +63,24 @@ router.post('/subjects', async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /subjects:
+ *   get:
+ *     summary: Get all Subjects
+ *     tags: [Subjects]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Subject'
+ */
+
 
 // Get all subjects
 router.get('/subjects', async (req, res) => {

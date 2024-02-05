@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const teacherSchema = mongoose.Schema({
-  teacherID:{
+  teacherID: {
     type: String,
     required: true,
   },
@@ -15,8 +15,12 @@ const teacherSchema = mongoose.Schema({
       ref: 'Subject',
     },
   ],
+   user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
 });
 
-const Subject = mongoose.model('Teacher', teacherSchema);
+const Teacher = mongoose.model('Teacher', teacherSchema);
 
 module.exports = Teacher;
