@@ -104,8 +104,9 @@ app.post('/login', async (req, res, next) => {
 
     // Validate password
     if (user && bcrypt.compareSync(password, user.password)) {
+      const expiresIn = 3600;
       // Generate token including user_id in the payload
-      const token = jwt.sign({ user_id: user.user_id, email }, secretKey);
+      const token = jwt.sign({ user_id: user.user_id, email }, secretKey, { expiresIn });
 
       // Stop measuring time
       const stopTime = performance.now();
@@ -116,7 +117,7 @@ app.post('/login', async (req, res, next) => {
       // Log time taken
       console.log(`Time taken /login: ${timeTaken} milliseconds`);
 
-      return res.json({ token });
+      return res.json({ token, expiresIn });
     }
 
     // Incorrect password or user not found
