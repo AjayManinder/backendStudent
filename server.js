@@ -130,12 +130,11 @@ app.post('/login', async (req, res, next) => {
   next();
 });
 
-
-// User registration endpoint
+// POST route for registering a new user
 app.post('/register', async (req, res) => {
-  const { user_id, email, password, role_id } = req.body;
-
   try {
+    const { user_id, email, password, role_id } = req.body;
+
     // Validate email format
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ message: 'Invalid email format' });
@@ -158,11 +157,14 @@ app.post('/register', async (req, res) => {
       role_id,
     });
 
-    res.status(201).json({ message: 'User registered successfully' });
+    // Redirect to the student form page with the newly created user's ID
+    res.status(201).json({ message: 'User registered successfully', userId: newUser._id });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 /**
  * @swagger

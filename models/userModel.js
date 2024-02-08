@@ -26,12 +26,6 @@ const userSchema = new Schema({
     required: true,
     trim: true,
   },
-  // roleIds: [
-  //   {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: 'Role',
-  //   },
-  // ]
    role_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role', // Reference to the 'Role' model

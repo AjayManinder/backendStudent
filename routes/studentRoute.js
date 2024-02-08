@@ -65,31 +65,24 @@ const mongoose = require('mongoose');
 // Create a new student
 router.post('/students', async (req, res) => {
   try {
-     // Start measuring time
-     const startTime = performance.now();
-    const { subjectIds, yearSemIds, user_id, ...studentData } = req.body;
-     // Log user information
-     console.log(`User ID: ${user_id}, Request received at: ${new Date().toISOString()}`);
+    // Extract student details from the request body
+    const { rollNo, name, percentage, branch, subjectIds, yearSemIds, userId } = req.body;
 
+    // Create the student record
     const newStudent = await Student.create({
-      ...studentData,
-      subjectIds: subjectIds.map(subjectId => new mongoose.Types.ObjectId(subjectId)),
-      yearSemIds: yearSemIds.map(yearSemId => new mongoose.Types.ObjectId(yearSemId)),
-      user_id,
+      rollNo,
+      name,
+      percentage,
+      branch,
+      subjectIds,
+      yearSemIds,
+      user_id: userId, // Assign the user's ID to the student record
     });
 
-       // Stop measuring time
-       const stopTime = performance.now();
-
-       // Calculate the time taken
-       const timeTaken = stopTime - startTime;
-   
-       // Log time taken
-       console.log(`Time taken: ${timeTaken} milliseconds`);
-   
     res.status(201).json(newStudent);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
