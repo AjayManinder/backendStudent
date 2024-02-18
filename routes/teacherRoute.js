@@ -57,18 +57,18 @@ const router = express.Router();
 // Create a new teacher
 router.post('/teachers', async (req, res) => {
   try {
-    const { teacherID, teacherName, subjectIds, user_id } = req.body;
+    const { teacherID, teacherName, subjectIds, userId } = req.body;
 
     // Ensure required properties are provided
-    if (!teacherID || !teacherName || !subjectIds || !user_id) {
-      return res.status(400).json({ message: 'Please provide teacherID, teacherName, subjectIds, and user_id' });
+    if (!teacherID || !teacherName || !subjectIds || !userId) {
+      return res.status(400).json({ message: 'Please provide teacherID, teacherName, subjectIds, and userId' });
     }
 
     const newTeacher = await Teacher.create({
       teacherID,
       teacherName,
       subjectIds,
-      user_id,
+      user_id: userId,
     });
 
     res.status(201).json(newTeacher);
