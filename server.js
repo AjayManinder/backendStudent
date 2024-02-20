@@ -135,11 +135,6 @@ app.post('/register', async (req, res) => {
   try {
     const { user_id, email, password, role_id } = req.body;
 
-    // Validate email format
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
-    }
-
     // Check if the email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
