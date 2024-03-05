@@ -8,17 +8,6 @@ const fs = require('fs');
 // const mongoose = require('mongoose');
 require('dotenv').config();
 
-const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID;
-const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY;
-const AWS_REGION = process.env.AWS_REGION;
-
-AWS.config.update({
-  accessKeyId: ACCESS_KEY_ID,
-  secretAccessKey: SECRET_ACCESS_KEY,
-  region: AWS_REGION // Specify the AWS region where your S3 bucket is located
-});
-
-const s3 = new AWS.S3();
 
 /**
  * @swagger
@@ -228,8 +217,20 @@ router.delete('/students/:rollNo', async (req, res) => {
 });
 
 
+const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID;
+const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY;
+const AWS_REGION = process.env.AWS_REGION;
+
+AWS.config.update({
+  accessKeyId: ACCESS_KEY_ID,
+  secretAccessKey: SECRET_ACCESS_KEY,
+  region: AWS_REGION // Specify the AWS region where your S3 bucket is located
+});
+
+const s3 = new AWS.S3();
 
 // Route for uploading student profile image
+
 router.put('/students/upload-image/:rollNo', async (req, res) => {
   try {
     const { rollNo } = req.params;
@@ -244,15 +245,14 @@ router.put('/students/upload-image/:rollNo', async (req, res) => {
       return res.status(400).json({ error: 'File data not provided' });
     }
 
-    // Read the file data
-    const fileData = req.file.buffer;
+    const file = req.file; // Access the uploaded file
 
     // Configure parameters for uploading image to S3
     const params = {
       Bucket: 'collegeportal',
-      Key: `${rollNo}-${Date.now()}-image.jpg`, // Example filename: 1709634041234-IMG-20240305-WA0009.jpg
-      Body: fileData, // File content
-      ACL: 'public-read', // Make the object publicly accessible
+      Key: `${rollNo}-${Date.now()}-image.jpg`,
+      Body: file.buffer, // Access the file buffer
+      ACL: 'public-read'
     };
 
     // Upload image to S3
