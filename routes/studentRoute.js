@@ -64,21 +64,6 @@ const fs = require('fs');
  *               $ref: '#/components/schemas/Student'
  */
 
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 } // Limit file size to 10MB
-});
-
 // Create a new student
 router.post('/students', async (req, res) => {
   try {
@@ -228,28 +213,51 @@ router.delete('/students/:rollNo', async (req, res) => {
   }
 });
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Save uploaded files to the 'uploads' directory
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname); // Generate unique filename for uploaded file
+  }
+});
 
-// Upload student profile image
+// Create multer instance with specified storage configuration
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // Limit file size to 10MB
+});
+
+
+// Route for uploading student profile image
 router.put('/students/upload-image/:rollNo', upload.single('image'), async (req, res) => {
   try {
+    // Retrieve rollNo from request parameters
     const { rollNo } = req.params;
+
+    // Find the student by rollNo in the database
     const student = await Student.findOne({ rollNo });
 
+    // Check if the student exists
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
+    // If the student already has an image, delete it
     if (student.imageUrl) {
-      // Delete previous image if it exists
       fs.unlinkSync(student.imageUrl);
     }
 
-    // Update student's image URL
+    // Update the student's image URL with the path of the uploaded file
     student.imageUrl = req.file.path;
+
+    // Save the updated student record to the database
     await student.save();
 
+    // Respond with success message
     res.status(200).json({ message: 'Image uploaded successfully' });
   } catch (error) {
+    // If an error occurs, log it and respond with an error message
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
