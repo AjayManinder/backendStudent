@@ -255,7 +255,7 @@ router.put('/students/upload-image/:rollNo', upload.single('image'), async (req,
 
     // Configure parameters for uploading image to S3
     const params = {
-      Bucket: 'your-s3-bucket-name',
+      Bucket: 'collegeportal',
       Key: `${rollNo}-${req.file.originalname}`, // Use a unique key for each file (you can adjust this)
       Body: req.file.buffer, // File content
       ACL: 'public-read', // Make the object publicly accessible
@@ -277,30 +277,30 @@ router.put('/students/upload-image/:rollNo', upload.single('image'), async (req,
   }
 });
 
-// Delete student profile image
-router.delete('/students/delete-image/:rollNo', async (req, res) => {
-  try {
-    const { rollNo } = req.params;
-    const student = await Student.findOne({ rollNo });
+// // Delete student profile image
+// router.delete('/students/delete-image/:rollNo', async (req, res) => {
+//   try {
+//     const { rollNo } = req.params;
+//     const student = await Student.findOne({ rollNo });
 
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
-    }
+//     if (!student) {
+//       return res.status(404).json({ error: 'Student not found' });
+//     }
 
-    if (student.imageUrl) {
-      // Delete image file
-      fs.unlinkSync(student.imageUrl);
+//     if (student.imageUrl) {
+//       // Delete image file
+//       fs.unlinkSync(student.imageUrl);
 
-      // Reset imageUrl to default
-      student.imageUrl = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
-      await student.save();
-    }
+//       // Reset imageUrl to default
+//       student.imageUrl = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+//       await student.save();
+//     }
 
-    res.status(200).json({ message: 'Image deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
+//     res.status(200).json({ message: 'Image deleted successfully' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
 
 module.exports = router;
