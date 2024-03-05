@@ -13,8 +13,7 @@ const studentSchema = mongoose.Schema({
   percentage: Number,
   branch: String,
   imageUrl: {
-    data: Buffer,
-    contentType: String,
+    type: String,
    
   },
   subjectIds: [

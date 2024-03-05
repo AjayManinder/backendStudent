@@ -3,8 +3,22 @@ const express = require('express');
 const Student = require('../models/studentModel'); // Adjust the path based on your project structure
 const router = express.Router();
 const multer = require('multer');
+const AWS = require('aws-sdk');
 const fs = require('fs');
 // const mongoose = require('mongoose');
+require('dotenv').config();
+
+const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID;
+const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY;
+const AWS_REGION = process.env.AWS_REGION;
+
+AWS.config.update({
+  accessKeyId: ACCESS_KEY_ID,
+  secretAccessKey: SECRET_ACCESS_KEY,
+  region: AWS_REGION // Specify the AWS region where your S3 bucket is located
+});
+
+const s3 = new AWS.S3();
 
 /**
  * @swagger
@@ -232,32 +246,32 @@ const upload = multer({
 // Route for uploading student profile image
 router.put('/students/upload-image/:rollNo', upload.single('image'), async (req, res) => {
   try {
-    // Retrieve rollNo from request parameters
     const { rollNo } = req.params;
-
-    // Find the student by rollNo in the database
     const student = await Student.findOne({ rollNo });
 
-    // Check if the student exists
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    // If the student already has an image, delete it
-    if (student.imageUrl) {
-      fs.unlinkSync(student.imageUrl);
-    }
+    // Configure parameters for uploading image to S3
+    const params = {
+      Bucket: 'your-s3-bucket-name',
+      Key: `${rollNo}-${req.file.originalname}`, // Use a unique key for each file (you can adjust this)
+      Body: req.file.buffer, // File content
+      ACL: 'public-read', // Make the object publicly accessible
+    };
 
-    // Update the student's image URL with the path of the uploaded file
-    student.imageUrl = req.file.path;
+    // Upload image to S3
+    const data = await s3.upload(params).promise();
 
-    // Save the updated student record to the database
+    // Update the student's imageUrl with the S3 object URL
+    student.imageUrl = data.Location;
+
+    // Save the updated student record
     await student.save();
 
-    // Respond with success message
     res.status(200).json({ message: 'Image uploaded successfully' });
   } catch (error) {
-    // If an error occurs, log it and respond with an error message
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
