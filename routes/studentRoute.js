@@ -230,7 +230,7 @@ router.delete('/students/:rollNo', async (req, res) => {
 
 
 // Upload student profile image
-router.post('/students/upload-image/:rollNo', upload.single('image'), async (req, res) => {
+router.put('/students/upload-image/:rollNo', upload.single('image'), async (req, res) => {
   try {
     const { rollNo } = req.params;
     const student = await Student.findOne({ rollNo });
