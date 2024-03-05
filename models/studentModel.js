@@ -15,7 +15,7 @@ const studentSchema = mongoose.Schema({
   imageUrl: {
     data: Buffer,
     contentType: String,
-    required: false,
+   
   },
   subjectIds: [
     {
