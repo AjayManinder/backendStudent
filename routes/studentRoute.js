@@ -228,23 +228,26 @@ AWS.config.update({
 });
 
 const s3 = new AWS.S3();
+const storage = multer.memoryStorage(); // Store files in memory
+const upload = multer({ storage: storage });
 
 // Route for uploading student profile image
-
-router.put('/students/upload-image/:rollNo', async (req, res) => {
+router.put('/students/upload-image/:rollNo', upload.single('image'), async (req, res) => {
   try {
+    console.log("call started");
     const { rollNo } = req.params;
     const student = await Student.findOne({ rollNo });
-
+    console.log(rollNo);
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
     // Check if file data is provided
     if (!req.file) {
+      console.log("file not found");
       return res.status(400).json({ error: 'File data not provided' });
     }
-
+   
     const file = req.file; // Access the uploaded file
 
     // Configure parameters for uploading image to S3
