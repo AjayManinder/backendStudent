@@ -227,24 +227,10 @@ router.delete('/students/:rollNo', async (req, res) => {
   }
 });
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Save uploaded files to the 'uploads' directory
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); // Generate unique filename for uploaded file
-  }
-});
-
-// Create multer instance with specified storage configuration
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 } // Limit file size to 10MB
-});
 
 
 // Route for uploading student profile image
-router.put('/students/upload-image/:rollNo', upload.single('image'), async (req, res) => {
+router.put('/students/upload-image/:rollNo', async (req, res) => {
   try {
     const { rollNo } = req.params;
     const student = await Student.findOne({ rollNo });
@@ -253,11 +239,19 @@ router.put('/students/upload-image/:rollNo', upload.single('image'), async (req,
       return res.status(404).json({ error: 'Student not found' });
     }
 
+    // Check if file data is provided
+    if (!req.file) {
+      return res.status(400).json({ error: 'File data not provided' });
+    }
+
+    // Read the file data
+    const fileData = req.file.buffer;
+
     // Configure parameters for uploading image to S3
     const params = {
       Bucket: 'collegeportal',
-      Key: `${rollNo}-${req.file.originalname}`, // Use a unique key for each file (you can adjust this)
-      Body: req.file.buffer, // File content
+      Key: `${rollNo}-${Date.now()}-image.jpg`, // Example filename: 1709634041234-IMG-20240305-WA0009.jpg
+      Body: fileData, // File content
       ACL: 'public-read', // Make the object publicly accessible
     };
 
