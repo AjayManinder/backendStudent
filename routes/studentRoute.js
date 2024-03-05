@@ -1,8 +1,10 @@
 const express = require('express');
-const { performance } = require('perf_hooks');
+// const { performance } = require('perf_hooks');
 const Student = require('../models/studentModel'); // Adjust the path based on your project structure
 const router = express.Router();
-const mongoose = require('mongoose');
+const multer = require('multer');
+const fs = require('fs');
+// const mongoose = require('mongoose');
 
 /**
  * @swagger
@@ -61,6 +63,21 @@ const mongoose = require('mongoose');
  *             schema:
  *               $ref: '#/components/schemas/Student'
  */
+
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // Limit file size to 10MB
+});
 
 // Create a new student
 router.post('/students', async (req, res) => {
@@ -211,5 +228,57 @@ router.delete('/students/:rollNo', async (req, res) => {
   }
 });
 
+
+// Upload student profile image
+router.post('/students/upload-image/:rollNo', upload.single('image'), async (req, res) => {
+  try {
+    const { rollNo } = req.params;
+    const student = await Student.findOne({ rollNo });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    if (student.imageUrl) {
+      // Delete previous image if it exists
+      fs.unlinkSync(student.imageUrl);
+    }
+
+    // Update student's image URL
+    student.imageUrl = req.file.path;
+    await student.save();
+
+    res.status(200).json({ message: 'Image uploaded successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Delete student profile image
+router.delete('/students/delete-image/:rollNo', async (req, res) => {
+  try {
+    const { rollNo } = req.params;
+    const student = await Student.findOne({ rollNo });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    if (student.imageUrl) {
+      // Delete image file
+      fs.unlinkSync(student.imageUrl);
+
+      // Reset imageUrl to default
+      student.imageUrl = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+      await student.save();
+    }
+
+    res.status(200).json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 module.exports = router;
