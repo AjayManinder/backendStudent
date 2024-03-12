@@ -255,6 +255,33 @@ router.put('/students/upload-image/:rollNo', upload.single('image'), async (req,
   }
 });
 
+// Add subjects to a student's record
+router.post('/students/:rollNo/subjects', async (req, res) => {
+  try {
+    const { rollNo } = req.params;
+    const { subjectId } = req.body;
+
+    // Find the student by rollNo
+    const student = await Student.findOne({ rollNo });
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Add the subjectId to the student's subjectIds array
+    student.subjectIds.push(subjectId);
+
+    // Save the updated student record
+    await student.save();
+
+    res.status(200).json({ message: 'Subject added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
 // Delete student profile image
 router.delete('/students/delete-image/:rollNo', async (req, res) => {
   try {
