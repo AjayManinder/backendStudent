@@ -331,10 +331,10 @@ router.post('/students/:rollNo/subjects', async (req, res) => {
 
 
 // Delete student profile image
-router.delete('/students/delete-image/:rollNo', async (req, res) => {
-  try {
-    const { rollNo } = req.params;
-    const student = await Student.findOne({ rollNo });
+// router.delete('/students/delete-image/:rollNo', async (req, res) => {
+//   try {
+//     const { rollNo } = req.params;
+//     const student = await Student.findOne({ rollNo });
 
 
 //     if (!student) {
