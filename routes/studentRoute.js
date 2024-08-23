@@ -329,6 +329,36 @@ router.post('/students/:rollNo/subjects', async (req, res) => {
   }
 });
 
+router.delete('/students/:rollNo/subjects/:subjectId', async (req, res) => {
+  try {
+    const { rollNo, subjectId } = req.params;
+
+    // Find the student by rollNo
+    const student = await Student.findOne({ rollNo });
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Check if the subjectId exists in the student's subjectIds array
+    const index = student.subjectIds.indexOf(subjectId);
+    if (index === -1) {
+      return res.status(404).json({ message: 'Subject not found for this student' });
+    }
+
+    // Remove the subjectId from the student's subjectIds array
+    student.subjectIds.splice(index, 1);
+
+    // Save the updated student record
+    await student.save();
+
+    res.status(200).json({ message: 'Subject deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 
 // Delete student profile image
 // router.delete('/students/delete-image/:rollNo', async (req, res) => {

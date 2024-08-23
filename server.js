@@ -26,7 +26,7 @@ app.use(bodyParser.json());
 require('dotenv').config();
 app.use('/api-docs', swagger.swaggerUi.serve, swagger.swaggerUi.setup(swagger.specs));
 
-const port = 5000;
+const port = 5001;
 const protocol = process.env.DB_PROTOCOL;
 const username = process.env.DB_USERNAME;
 const password = process.env.DB_PASSWORD;
