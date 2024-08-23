@@ -9,6 +9,11 @@ const subjectSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  subjectCredits:{
+    type: Number,
+    default: 3,
+    required: false,
+  },
   description: String,
   topics: [String],
 });
